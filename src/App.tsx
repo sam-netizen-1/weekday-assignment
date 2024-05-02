@@ -1,7 +1,12 @@
 import "./App.scss";
+import JobList from "./components/JobList";
 
 function App() {
-  return <div></div>;
+  return (
+    <div>
+      <JobList />
+    </div>
+  );
 }
 
 export default App;
