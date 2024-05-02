@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import JobCard from "../JobCard/";
 import styles from "./JobList.module.scss";
-
 interface Job {
   jdUid: string;
   jdLink: string;
@@ -17,11 +16,23 @@ interface Job {
 
 const JobList: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [isFetching, setIsFetching] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
+  useEffect(() => {
+    fetchJobs();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!isFetching) return;
+    fetchJobs();
+  }, [isFetching]);
+
   const fetchJobs = async () => {
-    if (!hasMore) return;
+    setIsFetching(true);
     const response = await fetch(
       "https://api.weekday.technology/adhoc/getSampleJdJSON",
       {
@@ -33,32 +44,28 @@ const JobList: React.FC = () => {
       }
     );
     const data = await response.json();
-    setJobs([...jobs, ...data.jdList]);
+    setJobs((prevJobs) => [...prevJobs, ...data.jdList]);
     setOffset(offset + data.jdList.length);
-    // setHasMore(data.totalCount > jobs.length + data.jdList.length);
-    setHasMore(false);
+    setHasMore(data.totalCount > jobs.length + data.jdList.length);
+    setIsFetching(false);
   };
-
-  useEffect(() => {
-    window.addEventListener("scroll", handleScroll);
-    fetchJobs();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [offset, jobs]);
 
   const handleScroll = () => {
     if (
       window.innerHeight + document.documentElement.scrollTop !==
-      document.documentElement.offsetHeight
+        document.documentElement.offsetHeight ||
+      isFetching
     )
       return;
-    fetchJobs();
+    setIsFetching(true);
   };
 
   return (
     <div className={styles["job-list"]}>
-      {jobs.map((job) => (
+      {jobs.map((job, index) => (
         <JobCard key={job.jdUid} {...job} />
       ))}
+      {isFetching && <div>Loading more...</div>}
     </div>
   );
 };

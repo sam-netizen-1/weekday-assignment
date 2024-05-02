@@ -1,4 +1,7 @@
 import React from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 import styles from "./JobCard.module.scss";
 
 interface JobProps {
@@ -25,28 +28,28 @@ const JobCard: React.FC<JobProps> = ({
   jobRole,
 }) => {
   return (
-    <div className={styles.jobCard}>
-      <div className={styles.header}>
-        <h2>{jobRole}</h2>
-        <p>{location}</p>
-      </div>
-      <div className={styles.salary}>
-        <p>
-          Salary: {minJdSalary} - {maxJdSalary} {salaryCurrencyCode}
-        </p>
-      </div>
-      <div className={styles.experience}>
-        <p>
-          Experience: {minExp} - {maxExp} {minExp || maxExp ? "years" : ""}
-        </p>
-      </div>
-      <div className={styles.description}>
-        <p>{jobDetailsFromCompany}</p>
-      </div>
-      <div className={styles.applyButton}>
-        <button>Easy Apply</button>
-      </div>
-    </div>
+    <Box className={styles.jobCard}>
+      <Box className={styles.header}>
+        <Typography variant="h6" component="h2">
+          {jobRole}
+        </Typography>
+        <Typography variant="body1">{location}</Typography>
+      </Box>
+      <Typography variant="body1" className={styles.salary}>
+        Salary: {minJdSalary} - {maxJdSalary} {salaryCurrencyCode}
+      </Typography>
+      <Typography variant="body1" className={styles.experience}>
+        Experience: {minExp} - {maxExp} {minExp || maxExp ? "years" : ""}
+      </Typography>
+      <Typography variant="body1" className={styles.description}>
+        {jobDetailsFromCompany}
+      </Typography>
+      <Box className={styles.applyButton}>
+        <Button variant="contained" fullWidth>
+          Easy Apply
+        </Button>
+      </Box>
+    </Box>
   );
 };
 
