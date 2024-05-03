@@ -60,8 +60,7 @@ const JobCard = (
         {salaryCurrencyCode === "USD" ? "$ ✅" : ""}
       </Typography>
 
-      <Typography
-        variant="body1"
+      <div
         className={styles.description}
         style={{
           overflow: isExpanded ? "visible" : "hidden",
@@ -74,7 +73,7 @@ const JobCard = (
         <p className={styles.aboutCompany}>About Company:</p>
         <p className={styles.aboutUs}>About us</p>
         {jobDetailsFromCompany}
-      </Typography>
+      </div>
       <Box className={styles.buttonContainer}>
         <Button className={styles.viewButton} onClick={handleViewMore}>
           {isExpanded ? "View Less" : "View More"}

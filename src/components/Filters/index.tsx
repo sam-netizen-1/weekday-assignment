@@ -1,29 +1,70 @@
-import React from "react";
+import { useDispatch } from "react-redux";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
-import styles from "./Filters.module.scss";
 import Select from "react-select";
-import { MenuItem } from "@mui/material";
+import styles from "./Filters.module.scss";
+import { setFilter } from "../../redux/JobsSlice";
 
-interface FiltersProps {
-  onFilterChange: any;
+interface OptionType {
+  value: string;
+  label: string;
 }
 
-const roles = ["frontend", "ios", "android", "tech lead", "backend"];
-const experiences = ["1 ", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-const locations = ["remote", "delhi ncr", "mumbai", "chennai", "bangalore"];
-const basePayRanges = ["<10k", "10k-30k", "30k-50k", "50k+"];
+const roles: OptionType[] = [
+  { value: "frontend", label: "Frontend" },
+  { value: "ios", label: "iOS" },
+  { value: "android", label: "Android" },
+  { value: "tech lead", label: "Tech Lead" },
+  { value: "backend", label: "Backend" },
+];
 
-const Filters = ({ onFilterChange }: FiltersProps) => {
+const experiences: OptionType[] = [
+  { value: "1", label: "1 year" },
+  { value: "2", label: "2 years" },
+  { value: "3", label: "3 years" },
+  { value: "4", label: "4 years" },
+  { value: "5", label: "5 years" },
+  { value: "6", label: "6 years" },
+  { value: "7", label: "7 years" },
+  { value: "8", label: "8 years" },
+  { value: "9", label: "9 years" },
+  { value: "10", label: "10+ years" },
+];
+
+const locations: OptionType[] = [
+  { value: "remote", label: "Remote" },
+  { value: "delhi ncr", label: "Delhi NCR" },
+  { value: "mumbai", label: "Mumbai" },
+  { value: "chennai", label: "Chennai" },
+  { value: "bangalore", label: "Bangalore" },
+];
+
+const basePayRanges: OptionType[] = [
+  { value: "<10k", label: "<10k" },
+  { value: "10k-30k", label: "10k-30k" },
+  { value: "30k-50k", label: "30k-50k" },
+  { value: "50k+", label: "50k+" },
+];
+
+const Filters: React.FC = () => {
+  const dispatch = useDispatch();
+
   const handleSelectChange = (selectedOption: any, filterName: string) => {
-    const selectedValues = selectedOption ? selectedOption.value : "";
-    onFilterChange(filterName, selectedValues);
+    let value: string | string[] = "";
+
+    if (Array.isArray(selectedOption)) {
+      value = selectedOption.map((option) => option.value);
+    } else if (selectedOption) {
+      value = selectedOption.value;
+    }
+
+    dispatch(setFilter({ filterName, value }));
   };
 
   return (
     <Box className={styles.filtersBar}>
       <Select
-        options={experiences.map((exp) => ({ value: exp, label: exp }))}
+        options={experiences}
         placeholder="Min Experience"
         onChange={(selectedOption) =>
           handleSelectChange(selectedOption, "experience")
@@ -32,7 +73,7 @@ const Filters = ({ onFilterChange }: FiltersProps) => {
         isClearable
       />
       <Select
-        options={locations.map((loc) => ({ value: loc, label: loc }))}
+        options={locations}
         placeholder="Location"
         onChange={(selectedOption) =>
           handleSelectChange(selectedOption, "location")
@@ -42,7 +83,7 @@ const Filters = ({ onFilterChange }: FiltersProps) => {
         isClearable
       />
       <Select
-        options={roles.map((role) => ({ value: role, label: role }))}
+        options={roles}
         placeholder="Role"
         onChange={(selectedOption) =>
           handleSelectChange(selectedOption, "role")
@@ -52,7 +93,7 @@ const Filters = ({ onFilterChange }: FiltersProps) => {
         isClearable
       />
       <Select
-        options={basePayRanges.map((pay) => ({ value: pay, label: pay }))}
+        options={basePayRanges}
         placeholder="Min Base Pay"
         onChange={(selectedOption) =>
           handleSelectChange(selectedOption, "basePay")
@@ -62,7 +103,11 @@ const Filters = ({ onFilterChange }: FiltersProps) => {
       />
       <TextField
         label="Company Name"
-        onChange={(event) => onFilterChange("companyName", event.target.value)}
+        onChange={(e) =>
+          dispatch(
+            setFilter({ filterName: "companyName", value: e.target.value })
+          )
+        }
         className={styles.filterItem}
       />
     </Box>

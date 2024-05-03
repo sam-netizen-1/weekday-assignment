@@ -1,22 +1,36 @@
-import React, { BaseSyntheticEvent, useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import JobCard from "../JobCard/";
 import styles from "./JobList.module.scss";
 import { IJob } from "../JobCard/JobCard.types";
 import { Box } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { JobsState, fetchJobs, setFetching } from "../../redux/JobsSlice";
+import { AppDispatch, RootState } from "../../redux/store";
+import { selectFilteredJobs, throttle } from "./JobList.helper";
 
 const JobList = () => {
-  const [jobs, setJobs] = useState<IJob[]>([]);
-  const [isFetching, setIsFetching] = useState(false);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const dispatch = useDispatch<AppDispatch>();
+  const { isFetching, hasMore } = useSelector((state: RootState) => state.jobs);
+  const jobs = useSelector(selectFilteredJobs);
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const jobRefs = useRef([]);
-
-  useEffect(() => {
-    jobRefs.current = jobs.map(
-      (_, i) => jobRefs.current[i] || React.createRef()
-    );
-  }, [jobs]);
+  const handleFetch = () => {
+    if (isFetching || !hasMore) {
+      return;
+    }
+    dispatch(setFetching(true));
+    dispatch(fetchJobs());
+  };
+  const handleScroll = throttle(() => {
+    const bottomOffset = 200;
+    const scrollPosition =
+      window.innerHeight + document.documentElement.scrollTop;
+    const pageHeight = document.documentElement.offsetHeight;
+    const distanceToBottom = pageHeight - scrollPosition;
+    if (distanceToBottom < bottomOffset && hasMore && !isFetching) {
+      handleFetch();
+    }
+  }, 100);
 
   const handleClickOutside = (event: any) => {
     if (expandedJobId) {
@@ -30,54 +44,26 @@ const JobList = () => {
     }
   };
 
-  const fetchJobs = async (initialFetch = false) => {
-    if (!hasMore || (initialFetch && isFetching)) return;
-    const response = await fetch(
-      "https://api.weekday.technology/adhoc/getSampleJdJSON",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ limit: 10, offset }),
-      }
-    );
-    const data = await response.json();
-    setJobs((prevJobs) => [...prevJobs, ...data.jdList]);
-    setOffset((prevOffset) => prevOffset + data.jdList.length);
-    setHasMore(data.totalCount > jobs.length + data.jdList.length);
-    setIsFetching(false);
-  };
-
   useEffect(() => {
-    if (!isFetching) return;
-    fetchJobs();
-  }, [isFetching]);
+    handleFetch();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  useEffect(() => {
+    jobRefs.current = jobs.map(
+      (_: IJob, i: number) => jobRefs.current[i] || React.createRef()
+    );
+  }, [jobs]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [expandedJobId]);
 
-  const handleScroll = () => {
-    const bottomOffset = 200;
-    const scrollPosition =
-      window.innerHeight + document.documentElement.scrollTop;
-    const pageHeight = document.documentElement.offsetHeight;
-    const distanceToBottom = pageHeight - scrollPosition;
-
-    if (distanceToBottom < bottomOffset && !isFetching) {
-      setIsFetching(true);
-    }
-  };
-  useEffect(() => {
-    fetchJobs(true);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <Box>
       <Box className={styles["job-list"]}>
-        {jobs.map((job, index) => (
+        {jobs.map((job: IJob, index: number) => (
           <JobCard
             key={job.jdUid}
             ref={jobRefs.current[index]}
