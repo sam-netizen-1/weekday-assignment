@@ -14,12 +14,17 @@ const JobList = () => {
   const jobs = useSelector(selectFilteredJobs);
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const jobRefs = useRef([]);
+  const fetchMoreRef = useRef(false);
+
   const handleFetch = () => {
-    if (isFetching || !hasMore) {
+    if (isFetching || !hasMore || fetchMoreRef.current) {
       return;
     }
+    fetchMoreRef.current = true;
     dispatch(setFetching(true));
-    dispatch(fetchJobs());
+    dispatch(fetchJobs()).finally(() => {
+      fetchMoreRef.current = false;
+    });
   };
   const handleScroll = throttle(() => {
     const bottomOffset = 200;
@@ -43,6 +48,20 @@ const JobList = () => {
       }
     }
   };
+
+  const checkNeedForMoreContent = () => {
+    if (
+      document.documentElement.offsetHeight < window.innerHeight &&
+      hasMore &&
+      !isFetching
+    ) {
+      handleFetch();
+    }
+  };
+
+  useEffect(() => {
+    checkNeedForMoreContent();
+  }, [jobs]);
 
   useEffect(() => {
     handleFetch();
@@ -75,6 +94,9 @@ const JobList = () => {
         ))}
       </Box>
       {isFetching && <div>Loading more...</div>}
+      {jobs.length === 0 && !isFetching && (
+        <div className={styles.emptyState}>No More Jobs To Show.</div>
+      )}
     </Box>
   );
 };

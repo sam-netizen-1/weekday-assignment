@@ -22,6 +22,9 @@ export const selectFilteredJobs = (state: RootState) => {
         ? job?.companyName
             ?.toLowerCase()
             .includes(filters.companyName.toLowerCase())
+        : true) &&
+      (filters?.basePay
+        ? job?.minJdSalary && job?.minJdSalary >= parseInt(filters.basePay)
         : true)
     );
   });

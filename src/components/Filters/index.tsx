@@ -40,10 +40,16 @@ const locations: OptionType[] = [
 ];
 
 const basePayRanges: OptionType[] = [
-  { value: "<10k", label: "<10k" },
-  { value: "10k-30k", label: "10k-30k" },
-  { value: "30k-50k", label: "30k-50k" },
-  { value: "50k+", label: "50k+" },
+  { value: "10", label: "10k" },
+  { value: "20", label: "20k" },
+  { value: "30", label: "30k" },
+  { value: "40", label: "40k" },
+  { value: "50", label: "50k" },
+  { value: "60", label: "60k" },
+  { value: "70", label: "70k" },
+  { value: "80", label: "80k" },
+  { value: "90", label: "90k" },
+  { value: "100", label: "100k" },
 ];
 
 const Filters: React.FC = () => {
@@ -108,7 +114,6 @@ const Filters: React.FC = () => {
             setFilter({ filterName: "companyName", value: e.target.value })
           )
         }
-        className={styles.filterItem}
       />
     </Box>
   );

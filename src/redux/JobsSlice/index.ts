@@ -50,7 +50,7 @@ export const fetchJobs = createAsyncThunk(
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ limit: 10, offset }),
+        body: JSON.stringify({ limit: 20, offset }),
       }
     );
     const data = await response.json();

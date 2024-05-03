@@ -10,5 +10,7 @@
   .filterItem {
     margin-right: 8px;
     width: 300px !important;
+    position: relative;
+    z-index: 10;
   }
 }
