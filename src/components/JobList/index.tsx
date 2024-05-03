@@ -1,24 +1,34 @@
-import { useEffect, useState } from "react";
+import React, { BaseSyntheticEvent, useEffect, useState, useRef } from "react";
 import JobCard from "../JobCard/";
 import styles from "./JobList.module.scss";
 import { IJob } from "../JobCard/JobCard.types";
+import { Box } from "@mui/material";
 
 const JobList = () => {
   const [jobs, setJobs] = useState<IJob[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+  const jobRefs = useRef([]);
 
   useEffect(() => {
-    fetchJobs(true);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    jobRefs.current = jobs.map(
+      (_, i) => jobRefs.current[i] || React.createRef()
+    );
+  }, [jobs]);
 
-  useEffect(() => {
-    if (!isFetching) return;
-    fetchJobs();
-  }, [isFetching]);
+  const handleClickOutside = (event: any) => {
+    if (expandedJobId) {
+      const isOutside = !jobRefs.current.some(
+        (ref: React.RefObject<HTMLDivElement>) =>
+          ref.current?.contains(event.target)
+      );
+      if (isOutside) {
+        setExpandedJobId(null);
+      }
+    }
+  };
 
   const fetchJobs = async (initialFetch = false) => {
     if (!hasMore || (initialFetch && isFetching)) return;
@@ -26,36 +36,60 @@ const JobList = () => {
       "https://api.weekday.technology/adhoc/getSampleJdJSON",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ limit: 10, offset }),
       }
     );
     const data = await response.json();
     setJobs((prevJobs) => [...prevJobs, ...data.jdList]);
-    setOffset(offset + data.jdList.length);
+    setOffset((prevOffset) => prevOffset + data.jdList.length);
     setHasMore(data.totalCount > jobs.length + data.jdList.length);
     setIsFetching(false);
   };
 
+  useEffect(() => {
+    if (!isFetching) return;
+    fetchJobs();
+  }, [isFetching]);
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [expandedJobId]);
+
   const handleScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop !==
-        document.documentElement.offsetHeight ||
-      isFetching
-    )
-      return;
-    setIsFetching(true);
+    const bottomOffset = 200;
+    const scrollPosition =
+      window.innerHeight + document.documentElement.scrollTop;
+    const pageHeight = document.documentElement.offsetHeight;
+    const distanceToBottom = pageHeight - scrollPosition;
+
+    if (distanceToBottom < bottomOffset && !isFetching) {
+      setIsFetching(true);
+    }
   };
+  useEffect(() => {
+    fetchJobs(true);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className={styles["job-list"]}>
-      {jobs.map((job) => (
-        <JobCard key={job.jdUid} {...job} />
-      ))}
+    <Box>
+      <Box className={styles["job-list"]}>
+        {jobs.map((job, index) => (
+          <JobCard
+            key={job.jdUid}
+            ref={jobRefs.current[index]}
+            {...job}
+            isExpanded={job.jdUid === expandedJobId}
+            setExpandedJobId={setExpandedJobId}
+            expandedJobId={expandedJobId}
+          />
+        ))}
+      </Box>
       {isFetching && <div>Loading more...</div>}
-    </div>
+    </Box>
   );
 };
 
