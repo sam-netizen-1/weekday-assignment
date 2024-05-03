@@ -1,19 +1,19 @@
-import React from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
 import styles from "./Filters.module.scss";
+import { Select } from "@mui/material";
 
 interface FiltersProps {
   onFilterChange: any;
   // onFilterChange: (filterName: string, value: string | number) => void;
 }
 
-const roles = ["Backend Engineer", "Frontend Engineer", "Product Manager"];
+const roles = ["frontend", "ios", "android", "tech lead", "backend"];
 const experiences = ["<1 year", "1-3 years", "3-5 years", "5+ years"];
-const remoteOptions = ["Remote", "In-office", "Hybrid"];
+const locations = ["remote", "delhi ncr", "mumbai", "chennai", "bangalore"];
 
-const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
+const Filters = ({ onFilterChange }: FiltersProps) => {
   return (
     <Box className={styles.filtersBar}>
       <TextField
@@ -29,10 +29,10 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
           </MenuItem>
         ))}
       </TextField>
-      <TextField
-        select
+      <Select
+        multiple
         label="Experience"
-        defaultValue=""
+        defaultValue={[]}
         onChange={(event) => onFilterChange("experience", event.target.value)}
         className={styles.filterItem}
       >
@@ -41,15 +41,15 @@ const Filters: React.FC<FiltersProps> = ({ onFilterChange }) => {
             {option}
           </MenuItem>
         ))}
-      </TextField>
+      </Select>
       <TextField
         select
-        label="Work Type"
+        label="Locations"
         defaultValue=""
         onChange={(event) => onFilterChange("remote", event.target.value)}
         className={styles.filterItem}
       >
-        {remoteOptions.map((option) => (
+        {locations.map((option) => (
           <MenuItem key={option} value={option}>
             {option}
           </MenuItem>

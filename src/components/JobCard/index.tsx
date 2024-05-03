@@ -1,22 +1,10 @@
-import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import styles from "./JobCard.module.scss";
+import { IJob } from "./JobCard.types";
 
-interface JobProps {
-  jdLink: string;
-  jobDetailsFromCompany: string;
-  maxJdSalary?: number;
-  minJdSalary?: number;
-  salaryCurrencyCode: string;
-  location: string;
-  minExp?: number;
-  maxExp?: number;
-  jobRole: string;
-}
-
-const JobCard: React.FC<JobProps> = ({
+const JobCard = ({
   jdLink,
   jobDetailsFromCompany,
   maxJdSalary,
@@ -26,27 +14,42 @@ const JobCard: React.FC<JobProps> = ({
   minExp,
   maxExp,
   jobRole,
-}) => {
+  companyName,
+  logoUrl,
+}: IJob) => {
   return (
     <Box className={styles.jobCard}>
       <Box className={styles.header}>
-        <Typography variant="h6" component="h2">
-          {jobRole}
-        </Typography>
-        <Typography variant="body1">{location}</Typography>
+        <img src={logoUrl} className={styles.logo} />
+        <Box className={styles.content}>
+          <Typography className={styles.companyName}>{companyName}</Typography>
+          <Typography className={styles.jobRole}>{jobRole}</Typography>
+          <Typography className={styles.location}>{location}</Typography>
+        </Box>
       </Box>
       <Typography variant="body1" className={styles.salary}>
-        Salary: {minJdSalary} - {maxJdSalary} {salaryCurrencyCode}
+        Estimated Salary: {minJdSalary ? minJdSalary + "K -" : ""}{" "}
+        {maxJdSalary ? maxJdSalary + "K" : ""}{" "}
+        {salaryCurrencyCode === "USD" ? "$" : ""}
       </Typography>
-      <Typography variant="body1" className={styles.experience}>
-        Experience: {minExp} - {maxExp} {minExp || maxExp ? "years" : ""}
-      </Typography>
+
       <Typography variant="body1" className={styles.description}>
         {jobDetailsFromCompany}
       </Typography>
+      <Typography variant="body1" className={styles.experience}>
+        Experience: {minExp ? minExp + " -" : ""} {maxExp}{" "}
+        {minExp || maxExp ? "years" : "Not Mentioned"}
+      </Typography>
       <Box className={styles.applyButton}>
+        <a href={jdLink} target="_blank">
+          <Button variant="contained" fullWidth>
+            ⚡ Easy Apply
+          </Button>
+        </a>
+      </Box>
+      <Box className={styles.referralButton}>
         <Button variant="contained" fullWidth>
-          Easy Apply
+          👥 Unlock referral asks
         </Button>
       </Box>
     </Box>

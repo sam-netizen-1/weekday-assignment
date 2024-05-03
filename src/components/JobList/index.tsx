@@ -1,27 +1,16 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import JobCard from "../JobCard/";
 import styles from "./JobList.module.scss";
-interface Job {
-  jdUid: string;
-  jdLink: string;
-  jobDetailsFromCompany: string;
-  maxJdSalary?: number;
-  minJdSalary?: number;
-  salaryCurrencyCode: string;
-  location: string;
-  minExp?: number;
-  maxExp?: number;
-  jobRole: string;
-}
+import { IJob } from "../JobCard/JobCard.types";
 
-const JobList: React.FC = () => {
-  const [jobs, setJobs] = useState<Job[]>([]);
+const JobList = () => {
+  const [jobs, setJobs] = useState<IJob[]>([]);
   const [isFetching, setIsFetching] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
-    fetchJobs();
+    fetchJobs(true);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -31,8 +20,8 @@ const JobList: React.FC = () => {
     fetchJobs();
   }, [isFetching]);
 
-  const fetchJobs = async () => {
-    setIsFetching(true);
+  const fetchJobs = async (initialFetch = false) => {
+    if (!hasMore || (initialFetch && isFetching)) return;
     const response = await fetch(
       "https://api.weekday.technology/adhoc/getSampleJdJSON",
       {
@@ -62,7 +51,7 @@ const JobList: React.FC = () => {
 
   return (
     <div className={styles["job-list"]}>
-      {jobs.map((job, index) => (
+      {jobs.map((job) => (
         <JobCard key={job.jdUid} {...job} />
       ))}
       {isFetching && <div>Loading more...</div>}
